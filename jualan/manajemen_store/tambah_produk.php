@@ -25,7 +25,7 @@
 	<fieldset>
 
 	<!-- Form Name -->
-	<legend>Edit Produk</legend>
+	<legend>Tambah Produk</legend>
 
 	<!-- Text input-->
 	<div class="form-group">
