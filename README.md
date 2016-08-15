@@ -2,7 +2,7 @@
 ## Basic CRUD & Dynamic Page
 ### (Online Store Batik)
 
-![Screenshot](http://localhost/hiweb/readme-asset/jualanbatik.jpg)
+![Screenshot](https://raw.githubusercontent.com/axquired24/hiweb-online-store/readme-asset/jualanbatik.jpg)
 
 - [Pendahuluan](#pendahuluan)
     - [Spesifikasi Sistem](#spesifikasi)
@@ -786,7 +786,7 @@ Dari link tersebut, menuju konten dari file `/jualan/manajemen_store/edit_produk
 <a name="penutup"></a>
 ## Penutup
 
-![Screenshot](http://localhost/hiweb/readme-asset/jualanbatik-2.jpg)
+![Screenshot](https://raw.githubusercontent.com/axquired24/hiweb-online-store/readme-asset/jualanbatik-2.jpg)
 
 Website Online-store sederhana sudah jadi. Website ini sengaja tidak ditambahkan fitur tambahan seperti keranjang belanja, login customer, perhitungan total belanja, dsb dikarenakan tujuan modul ini adalah **BASIC** CRUD dan Dynamic Page dengan studi kasus Online-Store. Semoga yang sedikit ini bisa membantu memahami dasar-dasar website dinamis dan lompatan menuju level selanjutnya.
 
@@ -798,7 +798,7 @@ Kode lengkap website ini bisa dilihat di [github](http://github.com/axquired24).
 <a name="penulis"></a>
 ### Penulis
 
-![Albert Septiawan](http://localhost/hiweb/readme-asset/axl.jpg)
+![Albert Septiawan](https://raw.githubusercontent.com/axquired24/hiweb-online-store/readme-asset/axl.jpg)
 
 Nama Lengkap Albert Septiawan. lahir di Lampung, 24 September 1995. Saat ini (Agustus, 2016) saya masih mahasiswa di Universitas Muhammadiyah Surakarta semester 7 yang juga sebagai Freelance bidang Web Developer yang lebih fokus pada framework PHP laravel dan Branding Digital Designer.  
 
