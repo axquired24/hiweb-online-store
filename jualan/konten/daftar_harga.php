@@ -1,1 +1,0 @@
-<h2>Daftar Harga</h2>

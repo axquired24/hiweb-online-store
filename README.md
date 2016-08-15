@@ -1,16 +1,27 @@
 # HIWEB TUTORIAL
-## Basic CRUD & Dynamic Page 
+## Basic CRUD & Dynamic Page
 ### (Online Store Batik)
 
 - [Pendahuluan](#pendahuluan)
     - [Spesifikasi Sistem](#spesifikasi)
-- [Authentication Quickstart](#authentication-quickstart)
-    - [Routing](#included-routing)
-    - [Views](#included-views)
-    - [Authenticating](#included-authenticating)
-    - [Retrieving The Authenticated User](#retrieving-the-authenticated-user)
-    - [Protecting Routes](#protecting-routes)
-    - [Authentication Throttling](#authentication-throttling)
+- [Membuat Database](#membuat-database)
+    - [Tabel Produk](#tb-produk)
+    - [Tabel Kategori](#tb-kategori)
+- [Koneksi Database](#koneksi-database)
+- [Membuat Layout](#membuat-layout)
+	- [Layout Dasar Halaman](#layout-dasar)
+	- [Menu Navigasi](#menu-navigasi)
+	- [Halaman Dinamis](#halaman-dinamis)
+- [Membuat Konten](#membuat-konten)
+	- [Halaman Awal](#halaman-awal)
+	- [Daftar Produk](#daftar-produk)
+	- [Detail Produk](#detail-produk)
+	- [Pencarian Produk](#pencarian-produk)
+- [CRUD Manajemen Produk](#manajemen-produk)
+	- [Tabel Daftar Produk](#tabel-daftar-produk)
+	- [Hapus Produk](#hapus-produk)
+	- [Tambah Produk](#tambah-produk)
+	- [Edit Produk](#edit-produk)
 - [Penutup](#penutup)
 	- [Lihat di github](#github)
 	- [Penulis](#penulis)
@@ -18,37 +29,104 @@
 <a name="pendahuluan"></a>
 ## Pendahuluan
 
-Tutorial ini berisi tentang pembuatan dasar halaman dinamis (Dynamic Page) dan Dasar CRUD (Create, Read, Update, Delete) menggunakan PHP dan Database MySQL. Untuk mempercantik tampilan pada website ini, akan kita gunakan CSS Framework yaitu Bootstrap Versi 3. Namun pada tutorial kali ini, penjelasan hanya berfokus kepada kode PHP dan MySQL sedangkan untuk Bootstrap akan saya lewati. Tutorial Bootstrap dapat dilihat di `w3scholl` atau di website resminya [getbootstrap.com](http://getbootstrap.com)
+Tutorial ini berisi tentang pembuatan dasar halaman dinamis (Dynamic Page) dan Dasar CRUD (Create, Read, Update, Delete) menggunakan PHP dan Database MySQL. Untuk mempercantik tampilan pada website ini, akan kita gunakan CSS Framework yaitu Bootstrap Versi 3. Namun pada tutorial kali ini, penjelasan hanya berfokus kepada kode PHP dan MySQL sedangkan untuk Bootstrap akan saya lewati. Tutorial Bootstrap dapat dilihat di `w3scholl` atau di website resminya [getbootstrap.com](http://getbootstrap.com).
+Aplikasi lengkap dapat dilihat di [github](http://github.com/axquired24)
 
 <a name="spesifikasi"></a>
 ### Spesifikasi Sistem
 
-By default, Laravel includes an `App\User` [Eloquent model](/docs/{{version}}/eloquent) in your `app` directory. This model may be used with the default Eloquent authentication driver. If your application is not using Eloquent, you may use the `database` authentication driver which uses the Laravel query builder.
+Sistem ini dibuat dengan :
+- JQuery
+- Bootstrap
+- PHP 5
+- MySQL
 
-When building the database schema for the `App\User` model, make sure the password column is at least 60 characters in length, the default of 255 would be a good choice.
+Untuk memulai project ini, seblumnya siapkan dulu file berikut ini:
+- /bs3_dist
+	- /css
+		- bootstrap.min.css
+	- /fonts
+		- glyphicons-halflings-regular.eot
+		- glyphicons-halflings-regular.svg
+		- glyphicons-halflings-regular.ttf
+		- glyphicons-halflings-regular.woff
+	- /js
+		- bootstrap.min.js
+		- jquery.js
+- /jualan
 
-Also, you should verify that your `users` (or equivalent) table contains a nullable, string `remember_token` column of 100 characters. This column will be used to store a token for "remember me" sessions being maintained by your application. This can be done by using `$table->rememberToken();` in a migration.
+Semua aset untuk website ini akan diletakkan dalam folder `/bs3_dist` yang bisa di download dari website resminya [getbootstrap.com](http://getbootstrap.com) dan jquery.js dari website resmi jquery pula. Untuk mempermudah, semua file tersebut juga sudah ada di [github](http://github.com/axquired24) saya.
 
-<a name="authentication-quickstart"></a>
-## Authentication Quickstart
+Folder `/jualan` akan berisi file website kita yang akan kita buat semua dari awal.
 
-Laravel ships with two authentication controllers out of the box, which are located in the `App\Http\Controllers\Auth` namespace. The `AuthController` handles new user registration and authentication, while the `PasswordController` contains the logic to help existing users reset their forgotten passwords. Each of these controllers uses a trait to include their necessary methods. For many applications, you will not need to modify these controllers at all.
+Contoh gambar dari website ini adalah `/jualan/baju-batik.jpg` yang dapat diambil dari [github](http://github.com/axquired24).
 
-<a name="included-routing"></a>
-### Routing
+<a name="membuat-database"></a>
+## Membuat Database
 
-Laravel provides a quick way to scaffold all of the routes and views you need for authentication using one simple command:
+Setelah menyiapkan aset css dan javascript, selanjutnya kita buat database dengan nama `jualan` lalu buat dua tabel dengan nama `produk` dan `all_kategori`.
 
-    php artisan make:auth
+<a name="tb-produk"></a>
+### Tabel Produk
 
-This command should be used on fresh applications and will install registration and login views, as well as routes for all authentication end-points. A `HomeController` will also be generated, which serves post-login requests to your application's dashboard. However, you are free to customize or even remove this controller based on the needs of your application.
+Struktur tabel `produk` adalah sebagai berikut:
 
-<a name="included-views"></a>
-### Views
+	--
+	-- Table structure for table `produk`
+	--
 
-As mentioned in the previous section, the `php artisan make:auth` command will create all of the views you need for authentication and place them in the `resources/views/auth` directory.
+	CREATE TABLE IF NOT EXISTS `produk` (
+	  `id_produk` int(5) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+	  `nama_produk` varchar(50) NOT NULL,
+	  `harga_produk` varchar(10) NOT NULL,
+	  `kategori_produk` int(5) NOT NULL,
+	  `gambar_produk` text NOT NULL
+	);
 
-The `make:auth` command will also create a `resources/views/layouts` directory containing a base layout for your application. All of these views use the Bootstrap CSS framework, but you are free to customize them however you wish.
+Kemudian isi dengan data sample :
+
+	--
+	-- Dumping data for table `produk`
+	--
+	INSERT INTO `produk`
+	(`id_produk`, `nama_produk`, `harga_produk`, `kategori_produk`, `gambar_produk`)
+	VALUES
+	(1, 'Batik Merah Pink', '28000', 3, 'baju-batik.jpg'),
+	(2, 'Batik Biru', '45000', 1, 'baju-batik.jpg'),
+	(3, 'Batik Putih', '100000', 1, 'baju-batik.jpg'),
+	(5, 'Batik Kuhued', '29000', 6, 'baju-batik.jpg');
+	-- --------------------------------------------------------
+
+<a name="tb-kategori"></a>
+### Tabel Kategori
+
+Struktur tabel `all_kategori` :
+
+	--
+	-- Table structure for table `all_kategori`
+	--
+
+	CREATE TABLE IF NOT EXISTS `all_kategori` (
+	  `id_kategori` int(5) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+	  `nama_kategori` varchar(50) NOT NULL
+	);
+
+Kemudian isi juga data sample-nya :
+
+	--
+	-- Dumping data for table `all_kategori`
+	--
+	INSERT INTO `all_kategori` (`id_kategori`, `nama_kategori`) VALUES
+	(1, 'Baju Batik Solo'),
+	(2, 'Batik Lampung '),
+	(3, 'Batik Asam Manis'),
+	(4, 'Batik Aceh'),
+	(5, 'Batik FKIP'),
+	(6, 'Batik Polosan'),
+	(7, 'Batik Aksara Lampung'),
+	(8, 'Batik Mahalan - Branded');
+	-- --------------------------------------------------------
+
 
 <a name="included-authenticating"></a>
 ### Authenticating
