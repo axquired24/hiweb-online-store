@@ -2,6 +2,8 @@
 ## Basic CRUD & Dynamic Page
 ### (Online Store Batik)
 
+![Screenshot](http://localhost/hiweb/readme-asset/jualanbatik.jpg)
+
 - [Pendahuluan](#pendahuluan)
     - [Spesifikasi Sistem](#spesifikasi)
 - [Membuat Database](#membuat-database)
@@ -42,18 +44,19 @@ Sistem ini dibuat dengan :
 - MySQL
 
 Untuk memulai project ini, seblumnya siapkan dulu file berikut ini:
-- /bs3_dist
-	- /css
-		- bootstrap.min.css
-	- /fonts
-		- glyphicons-halflings-regular.eot
-		- glyphicons-halflings-regular.svg
-		- glyphicons-halflings-regular.ttf
-		- glyphicons-halflings-regular.woff
-	- /js
-		- bootstrap.min.js
-		- jquery.js
-- /jualan
+- /Server-Root
+	- /bs3_dist
+		- /css
+			- bootstrap.min.css
+		- /fonts
+			- glyphicons-halflings-regular.eot
+			- glyphicons-halflings-regular.svg
+			- glyphicons-halflings-regular.ttf
+			- glyphicons-halflings-regular.woff
+		- /js
+			- bootstrap.min.js
+			- jquery.js
+	- /jualan
 
 Semua aset untuk website ini akan diletakkan dalam folder `/bs3_dist` yang bisa di download dari website resminya [getbootstrap.com](http://getbootstrap.com) dan jquery.js dari website resmi jquery pula. Untuk mempermudah, semua file tersebut juga sudah ada di [github](http://github.com/axquired24) saya.
 
@@ -127,546 +130,678 @@ Kemudian isi juga data sample-nya :
 	(8, 'Batik Mahalan - Branded');
 	-- --------------------------------------------------------
 
+<a name="koneksi-database"></a>
+## Koneksi Database
 
-<a name="included-authenticating"></a>
-### Authenticating
+Buat file untuk koneksi antara php dengan database yang telah kita buat di `/jualan/koneksi.php` :
 
-Now that you have routes and views setup for the included authentication controllers, you are ready to register and authenticate new users for your application! You may simply access your application in a browser. The authentication controllers already contain the logic (via their traits) to authenticate existing users and store new users in the database.
+	<?php
+		$host = "localhost"; 	// Nama Host
+		$user = "root";      	// Username MySQL, default 'root'
+		$pass = "root"; 		// Password MySQL, default ''
+		$dbn  = "jualan";		// Nama Database
 
-#### Path Customization
+		mysql_connect($host,$user,$pass); 	// Fungsi Koneksi
+		mysql_select_db($dbn);				// Fungsi Pilih Database
+	?>
 
-When a user is successfully authenticated, they will be redirected to the `/` URI. You can customize the post-authentication redirect location by defining a `redirectTo` property on the `AuthController`:
+<a name="membuat-layout"></a>
+## Membuat Layout
 
-    protected $redirectTo = '/home';
+Layout adalah tampilan inti dari website yang memudahkan kita dalam mendesain halaman web, dengan ini kita tidak perlu melakukan edit satu per satu file untuk tiap tampilan, hanya konten yang akan berubah sedangkan layout tetap.
 
-When a user is not successfully authenticated, they will be redirected back to the login form location automatically.
+<a name="layout-dasar"></a>
+### Layout Dasar Halaman
 
-To customize where a user is redirected after logging out of the application, you may define a `redirectAfterLogout` property on the `AuthController`:
+Layout dasar pada website ini berada di `/jualan/index.php` sebagai berikut:
 
-    protected $redirectAfterLogout = '/login';
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+	  <meta charset="UTF-8" />
+	  <title>Jualan Batik Alfatih24</title>
 
-If this property is not present, the user will be redirected to the `/` URI.
+	  <!-- Link CSS Bootstrap -->
+	  <link rel="stylesheet" href="../bs3_dist/css/bootstrap.min.css" />
+	</head>
+	<!-- CSS untuk Footer Halaman -->
+	<style>
+	  body {
+	    margin-bottom: 60px;
+	  }
 
-#### Guard Customization
+	  .footer {
+	    font-weight: bold;
+	    position: fixed;
+	    left: 50%;
+	    bottom: 0;
+	    margin-bottom: 20px;
+	    padding: 5px;
+	    border-radius: 5px;
+	    background-color: #F1F0F0;
+	  }
+	</style>
+	<body>
+	  <div class="container">
+	    <div class="row">
+	      <h2 class="page-header">Jualan Batik <!-- Brand Menu -->
+	        <div class="col-lg-6 pull-right">
+	          <!-- Form Pencarian Produk -->
+	          <form action="./?ur=konten/hasil_cari" method="post">
+	            <div class="input-group">
+	              <input name="barang_cari" type="text" class="form-control" placeholder="Cari produk disini" required>
+	              <span class="input-group-btn">
+	                <button class="btn btn-danger" type="submit"><span class="glyphicon glyphicon-search"></span>&nbsp; Cari</button>
+	              </span>
+	            </div><!-- /input-group -->
+	            </form>
+	            <!-- END Form Pencarian Produk -->
+	          </div><!-- /.col-lg-6 -->
+	      </h2>
+	    </div>
+	  </div>
 
-You may also customize the "guard" that is used to authenticate users. To get started, define a `guard` property on your `AuthController`. The value of this property should correspond with one of the guards configured in your `auth.php` configuration file:
+	  <!-- Bagian Konten -->
+	  <div class="container">
+	    <div class="row">
+	      <div class="col-md-4">
+	        <?php
+	          // Mencegah Error Notice PHP Development
+	          error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+	          // Menyisipkan File Koneksi
+	          include "koneksi.php";
+	          // Menyisipkan File Navigasi Kiri
+	          include "navmenu.php";
+	         // Buat Menu
+	        ?>
+	      </div>
+	      <div class="col-md-8">
+	        <?php
+	           // Halaman Dinamis
+	           // Sisipkan Konten dari Alamat di URL
+	           // Contoh URL : index.php?ur=konten/home
+	           // Berarti : Mengambil file di folder konten/ dengan nama home.php
+	          $file = $_GET[ur]; 	// Ambil variable ur= di url
+	          if(! isset($file))	// Jika variable kosong
+	          {
+	            include "konten/home.php";  // Sisipkan file konten/home.php
+	          }
+	          else          				// Selain itu
+	          {
+	            include $file.".php"; 		// Sisipkan isi variable ur= *.php
+	          }
+	        ?>
+	      </div>
+	    </div>
+	  </div>
+	  <!-- Footer Halaman -->
+	  <div class="footer"> &copy; <?php echo date('Y'); ?> - Jualan Batik Alfatih24</div>
+	</body>
+	</html>
 
-    protected $guard = 'admin';
+<a name="menu-navigasi"></a>
+### Menu Navigasi
 
-#### Validation / Storage Customization
+Menu Navigasi sebelah kiri berada pada layout, tetapi dengan cara disisipkan dari file aslinya yang berada di `/jualan/navmenu.php` yang isinya :
 
-To modify the form fields that are required when a new user registers with your application, or to customize how new user records are inserted into your database, you may modify the `AuthController` class. This class is responsible for validating and creating new users of your application.
+	<?php
+		// Variable Dinamic URL
+		  $list_barang  = "ur=konten/list_barang";
+		  $detail_barang = "ur=konten/detail_barang";
+		  $manajemen_produk = "ur=manajemen_store/manajemen_produk";
+	?>
+	<!-- Setiap href="url" dibawah ini, menggunakan dinamic url yang nama foldernya berada pada variable Dinamic URL diatas -->
+	<h3 class="page-header">
+		Main Menu
+		<span class="glyphicon glyphicon-th-list pull-right"></span>
+	</h3>
+	<ul class="nav nav-pills nav-stacked">
+	  <li role="presentation">
+	  	<a href="./">
+	  		<span class="glyphicon glyphicon-home"></span> &nbsp; Home
+	  	</a>
+	  </li>
+	  <li role="presentation">
+	  	<a href="./?<?php echo $list_barang; ?>">
+	  		<span class="glyphicon glyphicon-pencil"></span>&nbsp;  List Barang
+	  	</a>
+	  </li>
+	  <li role="presentation">
+	  	<a href="./?<?php echo $manajemen_produk; ?>">
+	  		<span class="glyphicon glyphicon-cog"></span>&nbsp; Manajemen Produk
+	  	</a>
+	  </li>
+	</ul>
 
-The `validator` method of the `AuthController` contains the validation rules for new users of the application. You are free to modify this method as you wish.
+<a name="halaman-dinamis"></a>
+### Halaman Dinamis
 
-The `create` method of the `AuthController` is responsible for creating new `App\User` records in your database using the [Eloquent ORM](/docs/{{version}}/eloquent). You are free to modify this method according to the needs of your database.
-
-<a name="retrieving-the-authenticated-user"></a>
-### Retrieving The Authenticated User
-
-You may access the authenticated user via the `Auth` facade:
-
-    $user = Auth::user();
-
-Alternatively, once a user is authenticated, you may access the authenticated user via an `Illuminate\Http\Request` instance. Remember, type-hinted classes will automatically be injected into your controller methods:
+Halaman dinamis adalah halaman yang di-generate secara otomatis oleh php menggunakan path dari file tersebut ataupun fungsi php lainnya. Fungsi halaman dinamis pada website ini menggunakan path (letak folder) dari file .php, berada pada layout `jualan/index.php` :
 
     <?php
-
-    namespace App\Http\Controllers;
-
-    use Illuminate\Http\Request;
-
-    class ProfileController extends Controller
-    {
-        /**
-         * Update the user's profile.
-         *
-         * @param  Request  $request
-         * @return Response
-         */
-        public function updateProfile(Request $request)
-        {
-            if ($request->user()) {
-                // $request->user() returns an instance of the authenticated user...
-            }
-        }
-    }
-
-#### Determining If The Current User Is Authenticated
-
-To determine if the user is already logged into your application, you may use the `check` method on the `Auth` facade, which will return `true` if the user is authenticated:
-
-    if (Auth::check()) {
-        // The user is logged in...
-    }
-
-However, you may use middleware to verify that the user is authenticated before allowing the user access to certain routes / controllers. To learn more about this, check out the documentation on [protecting routes](/docs/{{version}}/authentication#protecting-routes).
-
-<a name="protecting-routes"></a>
-### Protecting Routes
-
-[Route middleware](/docs/{{version}}/middleware) can be used to allow only authenticated users to access a given route. Laravel ships with the `auth` middleware, which is defined in `app\Http\Middleware\Authenticate.php`. All you need to do is attach the middleware to a route definition:
-
-    // Using A Route Closure...
-
-    Route::get('profile', ['middleware' => 'auth', function() {
-        // Only authenticated users may enter...
-    }]);
-
-    // Using A Controller...
-
-    Route::get('profile', [
-        'middleware' => 'auth',
-        'uses' => 'ProfileController@show'
-    ]);
-
-Of course, if you are using [controller classes](/docs/{{version}}/controllers), you may call the `middleware` method from the controller's constructor instead of attaching it in the route definition directly:
-
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
-#### Specifying A Guard
-
-When attaching the `auth` middleware to a route, you may also specify which guard should be used to perform the authentication:
-
-    Route::get('profile', [
-        'middleware' => 'auth:api',
-        'uses' => 'ProfileController@show'
-    ]);
-
-The guard specified should correspond to one of the keys in the `guards` array of your `auth.php` configuration file.
-
-<a name="authentication-throttling"></a>
-### Authentication Throttling
-
-If you are using Laravel's built-in `AuthController` class, the `Illuminate\Foundation\Auth\ThrottlesLogins` trait may be used to throttle login attempts to your application. By default, the user will not be able to login for one minute if they fail to provide the correct credentials after several attempts. The throttling is unique to the user's username / e-mail address and their IP address:
-
-    <?php
-
-    namespace App\Http\Controllers\Auth;
-
-    use App\User;
-    use Validator;
-    use App\Http\Controllers\Controller;
-    use Illuminate\Foundation\Auth\ThrottlesLogins;
-    use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
-
-    class AuthController extends Controller
-    {
-        use AuthenticatesAndRegistersUsers, ThrottlesLogins;
-
-        // Rest of AuthController class...
-    }
-
-<a name="authenticating-users"></a>
-## Manually Authenticating Users
-
-Of course, you are not required to use the authentication controllers included with Laravel. If you choose to remove these controllers, you will need to manage user authentication using the Laravel authentication classes directly. Don't worry, it's a cinch!
-
-We will access Laravel's authentication services via the `Auth` [facade](/docs/{{version}}/facades), so we'll need to make sure to import the `Auth` facade at the top of the class. Next, let's check out the `attempt` method:
-
-    <?php
-
-    namespace App\Http\Controllers;
-
-    use Auth;
-
-    class AuthController extends Controller
-    {
-        /**
-         * Handle an authentication attempt.
-         *
-         * @return Response
-         */
-        public function authenticate()
-        {
-            if (Auth::attempt(['email' => $email, 'password' => $password])) {
-                // Authentication passed...
-                return redirect()->intended('dashboard');
-            }
-        }
-    }
-
-The `attempt` method accepts an array of key / value pairs as its first argument. The values in the array will be used to find the user in your database table. So, in the example above, the user will be retrieved by the value of the `email` column. If the user is found, the hashed password stored in the database will be compared with the hashed `password` value passed to the method via the array. If the two hashed passwords match an authenticated session will be started for the user.
-
-The `attempt` method will return `true` if authentication was successful. Otherwise, `false` will be returned.
-
-The `intended` method on the redirector will redirect the user to the URL they were attempting to access before being caught by the authentication filter. A fallback URI may be given to this method in case the intended destination is not available.
-
-#### Specifying Additional Conditions
-
-If you wish, you also may add extra conditions to the authentication query in addition to the user's e-mail and password. For example, we may verify that user is marked as "active":
-
-    if (Auth::attempt(['email' => $email, 'password' => $password, 'active' => 1])) {
-        // The user is active, not suspended, and exists.
-    }
-
-> **Note:** In these examples, `email` is not a required option, it is merely used as an example. You should use whatever column name corresponds to a "username" in your database.
-
-#### Accessing Specific Guard Instances
-
-You may specify which guard instance you would like to utilize using the `guard` method on the `Auth` facade. This allows you to manage authentication for separate parts of your application using entirely separate authenticatable models or user tables.
-
-The guard name passed to the `guard` method should correspond to one of the guards configured in your `auth.php` configuration file:
-
-    if (Auth::guard('admin')->attempt($credentials)) {
-        //
-    }
-
-#### Logging Out
-
-To log users out of your application, you may use the `logout` method on the `Auth` facade. This will clear the authentication information in the user's session:
-
-    Auth::logout();
-
-<a name="remembering-users"></a>
-### Remembering Users
-
-If you would like to provide "remember me" functionality in your application, you may pass a boolean value as the second argument to the `attempt` method, which will keep the user authenticated indefinitely, or until they manually logout. Of course, your `users` table must include the string `remember_token` column, which will be used to store the "remember me" token.
-
-    if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
-        // The user is being remembered...
-    }
-
-If you are "remembering" users, you may use the `viaRemember` method to determine if the user was authenticated using the "remember me" cookie:
-
-    if (Auth::viaRemember()) {
-        //
-    }
-
-<a name="other-authentication-methods"></a>
-### Other Authentication Methods
-
-#### Authenticate A User Instance
-
-If you need to log an existing user instance into your application, you may call the `login` method with the user instance. The given object must be an implementation of the `Illuminate\Contracts\Auth\Authenticatable` [contract](/docs/{{version}}/contracts). Of course, the `App\User` model included with Laravel already implements this interface:
-
-    Auth::login($user);
-
-    // Login and "remember" the given user...
-    Auth::login($user, true);
-
-Of course, you may specify the guard instance you would like to use:
-
-    Auth::guard('admin')->login($user);
-
-#### Authenticate A User By ID
-
-To log a user into the application by their ID, you may use the `loginUsingId` method. This method simply accepts the primary key of the user you wish to authenticate:
-
-    Auth::loginUsingId(1);
-
-    // Login and "remember" the given user...
-    Auth::loginUsingId(1, true);
-
-#### Authenticate A User Once
-
-You may use the `once` method to log a user into the application for a single request. No sessions or cookies will be utilized, which may be helpful when building a stateless API. The `once` method has the same signature as the `attempt` method:
-
-    if (Auth::once($credentials)) {
-        //
-    }
-
-<a name="http-basic-authentication"></a>
-## HTTP Basic Authentication
-
-[HTTP Basic Authentication](http://en.wikipedia.org/wiki/Basic_access_authentication) provides a quick way to authenticate users of your application without setting up a dedicated "login" page. To get started, attach the `auth.basic` [middleware](/docs/{{version}}/middleware) to your route. The `auth.basic` middleware is included with the Laravel framework, so you do not need to define it:
-
-    Route::get('profile', ['middleware' => 'auth.basic', function() {
-        // Only authenticated users may enter...
-    }]);
-
-Once the middleware has been attached to the route, you will automatically be prompted for credentials when accessing the route in your browser. By default, the `auth.basic` middleware will use the `email` column on the user record as the "username".
-
-#### A Note On FastCGI
-
-If you are using PHP FastCGI, HTTP Basic authentication may not work correctly out of the box. The following lines should be added to your `.htaccess` file:
-
-    RewriteCond %{HTTP:Authorization} ^(.+)$
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-<a name="stateless-http-basic-authentication"></a>
-### Stateless HTTP Basic Authentication
-
-You may also use HTTP Basic Authentication without setting a user identifier cookie in the session, which is particularly useful for API authentication. To do so, [define a middleware](/docs/{{version}}/middleware) that calls the `onceBasic` method. If no response is returned by the `onceBasic` method, the request may be passed further into the application:
-
-    <?php
-
-    namespace Illuminate\Auth\Middleware;
-
-    use Auth;
-    use Closure;
-
-    class AuthenticateOnceWithBasicAuth
-    {
-        /**
-         * Handle an incoming request.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Closure  $next
-         * @return mixed
-         */
-        public function handle($request, Closure $next)
-        {
-            return Auth::onceBasic() ?: $next($request);
-        }
-
-    }
-
-Next, [register the route middleware](/docs/{{version}}/middleware#registering-middleware) and attach it to a route:
-
-    Route::get('api/user', ['middleware' => 'auth.basic.once', function() {
-        // Only authenticated users may enter...
-    }]);
-
-<a name="resetting-passwords"></a>
-## Resetting Passwords
-
-<a name="resetting-database"></a>
-### Database Considerations
-
-Most web applications provide a way for users to reset their forgotten passwords. Rather than forcing you to re-implement this on each application, Laravel provides convenient methods for sending password reminders and performing password resets.
-
-To get started, verify that your `App\User` model implements the `Illuminate\Contracts\Auth\CanResetPassword` contract. Of course, the `App\User` model included with the framework already implements this interface, and uses the `Illuminate\Auth\Passwords\CanResetPassword` trait to include the methods needed to implement the interface.
-
-#### Generating The Reset Token Table Migration
-
-Next, a table must be created to store the password reset tokens. The migration for this table is included with Laravel out of the box, and resides in the `database/migrations` directory. So, all you need to do is migrate:
-
-    php artisan migrate
-
-<a name="resetting-routing"></a>
-### Routing
-
-Laravel includes an `Auth\PasswordController` that contains the logic necessary to reset user passwords. All of the routes needed to perform password resets may be generated using the `make:auth` Artisan command:
-
-    php artisan make:auth
-
-<a name="resetting-views"></a>
-### Views
-
-Again, Laravel will generate all of the necessary views for password reset when the `make:auth` command is executed. These views are placed in `resources/views/auth/passwords`. You are free to customize them as needed for your application.
-
-<a name="after-resetting-passwords"></a>
-### After Resetting Passwords
-
-Once you have defined the routes and views to reset your user's passwords, you may simply access the route in your browser at `/password/reset`. The `PasswordController` included with the framework already includes the logic to send the password reset link e-mails as well as update passwords in the database.
-
-After the password is reset, the user will automatically be logged into the application and redirected to `/home`. You can customize the post password reset redirect location by defining a `redirectTo` property on the `PasswordController`:
-
-    protected $redirectTo = '/dashboard';
-
-> **Note:** By default, password reset tokens expire after one hour. You may change this via the password reset `expire` option in your `config/auth.php` file.
-
-<a name="password-customization"></a>
-### Customization
-
-#### Authentication Guard Customization
-
-In your `auth.php` configuration file, you may configure multiple "guards", which may be used to define authentication behavior for multiple user tables. You can customize the included `PasswordController` to use the guard of your choice by adding a `$guard` property to the controller:
-
-    /**
-     * The authentication guard that should be used.
-     *
-     * @var string
-     */
-    protected $guard = 'admins';
-
-#### Password Broker Customization
-
-In your `auth.php` configuration file, you may configure multiple password "brokers", which may be used to reset passwords on multiple user tables. You can customize the included `PasswordController` to use the broker of your choice by adding a `$broker` property to the controller:
-
-    /**
-     * The password broker that should be used.
-     *
-     * @var string
-     */
-    protected $broker = 'admins';
-
-<a name="adding-custom-guards"></a>
-## Adding Custom Guards
-
-You may define your own authentication guards using the `extend` method on the `Auth` facade. You should place this call to `provider` within a [service provider](/docs/{{version}}/providers):
-
-    <?php
-
-    namespace App\Providers;
-
-    use Auth;
-    use App\Services\Auth\JwtGuard;
-    use Illuminate\Support\ServiceProvider;
-
-    class AuthServiceProvider extends ServiceProvider
-    {
-        /**
-         * Perform post-registration booting of services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            Auth::extend('jwt', function($app, $name, array $config) {
-                // Return an instance of Illuminate\Contracts\Auth\Guard...
-
-                return new JwtGuard(Auth::createUserProvider($config['provider']));
-            });
-        }
-
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
-    }
-
-As you can see in the example above, the callback passed to the `extend` method should return an implementation of `Illuminate\Contracts\Auth\Guard`. This interface contains a few methods you will need to implement to define a custom guard.
-
-Once your custom guard has been defined, you may use the guard in your `guards` configuration:
-
-    'guards' => [
-        'api' => [
-            'driver' => 'jwt',
-            'provider' => 'users',
-        ],
-    ],
-
-<a name="adding-custom-user-providers"></a>
-## Adding Custom User Providers
-
-If you are not using a traditional relational database to store your users, you will need to extend Laravel with your own authentication user provider. We will use the `provider` method on the `Auth` facade to define a custom user provider. You should place this call to `provider` within a [service provider](/docs/{{version}}/providers):
-
-    <?php
-
-    namespace App\Providers;
-
-    use Auth;
-    use App\Extensions\RiakUserProvider;
-    use Illuminate\Support\ServiceProvider;
-
-    class AuthServiceProvider extends ServiceProvider
-    {
-        /**
-         * Perform post-registration booting of services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            Auth::provider('riak', function($app, array $config) {
-                // Return an instance of Illuminate\Contracts\Auth\UserProvider...
-                return new RiakUserProvider($app['riak.connection']);
-            });
-        }
-
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
-    }
-
-After you have registered the provider with the `provider` method, you may switch to the new user provider in your `config/auth.php` configuration file. First, define a `provider` that uses your new driver:
-
-    'providers' => [
-        'users' => [
-            'driver' => 'riak',
-        ],
-    ],
-
-Then, you may use this provider in your `guards` configuration:
-
-    'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
-    ],
-
-### The User Provider Contract
-
-The `Illuminate\Contracts\Auth\UserProvider` implementations are only responsible for fetching a `Illuminate\Contracts\Auth\Authenticatable` implementation out of a persistent storage system, such as MySQL, Riak, etc. These two interfaces allow the Laravel authentication mechanisms to continue functioning regardless of how the user data is stored or what type of class is used to represent it.
-
-Let's take a look at the `Illuminate\Contracts\Auth\UserProvider` contract:
-
-    <?php
-
-    namespace Illuminate\Contracts\Auth;
-
-    interface UserProvider {
-
-        public function retrieveById($identifier);
-        public function retrieveByToken($identifier, $token);
-        public function updateRememberToken(Authenticatable $user, $token);
-        public function retrieveByCredentials(array $credentials);
-        public function validateCredentials(Authenticatable $user, array $credentials);
-
-    }
-
-The `retrieveById` function typically receives a key representing the user, such as an auto-incrementing ID from a MySQL database. The `Authenticatable` implementation matching the ID should be retrieved and returned by the method.
-
-The `retrieveByToken` function retrieves a user by their unique `$identifier` and "remember me" `$token`, stored in a field `remember_token`. As with the previous method, the `Authenticatable` implementation should be returned.
-
-The `updateRememberToken` method updates the `$user` field `remember_token` with the new `$token`. The new token can be either a fresh token, assigned on a successful "remember me" login attempt, or a null when the user is logged out.
-
-The `retrieveByCredentials` method receives the array of credentials passed to the `Auth::attempt` method when attempting to sign into an application. The method should then "query" the underlying persistent storage for the user matching those credentials. Typically, this method will run a query with a "where" condition on `$credentials['username']`. The method should then return an implementation of `UserInterface`. **This method should not attempt to do any password validation or authentication.**
-
-The `validateCredentials` method should compare the given `$user` with the `$credentials` to authenticate the user. For example, this method might compare the `$user->getAuthPassword()` string to a `Hash::make` of `$credentials['password']`. This method should only validate the user's credentials and return a boolean.
-
-### The Authenticatable Contract
-
-Now that we have explored each of the methods on the `UserProvider`, let's take a look at the `Authenticatable` contract. Remember, the provider should return implementations of this interface from the `retrieveById` and `retrieveByCredentials` methods:
-
-    <?php
-
-    namespace Illuminate\Contracts\Auth;
-
-    interface Authenticatable {
-
-        public function getAuthIdentifierName();
-        public function getAuthIdentifier();
-        public function getAuthPassword();
-        public function getRememberToken();
-        public function setRememberToken($value);
-        public function getRememberTokenName();
-
-    }
-
-This interface is simple. The `getAuthIdentifierName` method should return the name of the "primary key" field of the user and the `getAuthIdentifier` method should return the "primary key" of the user. In a MySQL back-end, again, this would be the auto-incrementing primary key. The `getAuthPassword` should return the user's hashed password. This interface allows the authentication system to work with any User class, regardless of what ORM or storage abstraction layer you are using. By default, Laravel includes a `User` class in the `app` directory which implements this interface, so you may consult this class for an implementation example.
-
-<a name="events"></a>
-## Events
-
-Laravel raises a variety of [events](/docs/{{version}}/events) during the authentication process. You may attach listeners to these events in your `EventServiceProvider`:
-
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
-    protected $listen = [
-        'Illuminate\Auth\Events\Attempting' => [
-            'App\Listeners\LogAuthenticationAttempt',
-        ],
-
-        'Illuminate\Auth\Events\Login' => [
-            'App\Listeners\LogSuccessfulLogin',
-        ],
-
-        'Illuminate\Auth\Events\Logout' => [
-            'App\Listeners\LogSuccessfulLogout',
-        ],
-
-        'Illuminate\Auth\Events\Lockout' => [
-            'App\Listeners\LogLockout',
-        ],
-    ];
+       // Halaman Dinamis
+       // Sisipkan Konten dari Alamat di URL
+       // Contoh URL : index.php?ur=konten/home
+       // Berarti : Mengambil file di folder konten/ dengan nama home.php
+      $file = $_GET[ur]; 	// Ambil variable ur= di url
+      if(! isset($file))	// Jika variable kosong
+      {
+        include "konten/home.php";  // Sisipkan file konten/home.php
+      }
+      else          				// Selain itu
+      {
+        include $file.".php"; 		// Sisipkan isi variable ur= *.php
+      }
+    ?>
+
+<a name="membuat-konten"></a>
+## Membuat Konten
+
+Konten pada website ini berasal dari file *.php yang lokasinya di-generate melalui variable di URL setiap halaman. Ini memudahkan kita untuk berganti halaman tanpa harus manual `include` setiap path nya.
+
+<a name="halaman-awal"></a>
+### Halaman Awal
+
+Halaman selamat datang dibuat untuk eye-catch pengunjung dari website. Biasanya tidak terlalu panjang, untuk website online store biasanya berisi link menuju daftar produk, promo ataupun penawaran menarik.
+
+File halaman awal website ini berada pada `jualan/konten/home.php`, buat file baru dan isikan dengan kode berikut
+
+	<div class="jumbotron">
+	  <h1>Selamat Datang!</h1>
+	  <p>Kami menyediakan beragam jenis batik dari seluruh wilayah Indonesia yang terjamin kualitas dan harganya.</p>
+	  <p>
+	  	<!-- Variable $list_barang sudah di include pada navmenu.php sehingga dapat dipanggil kapan saja -->
+	  	<a class="btn btn-danger btn-lg" href="./?<?php echo $list_barang; ?>" role="button">Mulai Belanja!</a>
+	  </p>
+	</div>
+
+Pada file diatas terdapat kode `href="./?<?php echo $list_barang; ?>"` yang mengambil variable dari `navmenu.php` yakni
+
+	$list_barang  = "ur=konten/list_barang";
+
+Sehingga dalam HTML akan menjadi
+
+	href="./?ur=konten/list_barang"
+
+Yang artinya akan menuju halaman lain yang mengambil file dari folder `konten/list_barang` berekstensi `.php`
+
+<a name="daftar-produk"></a>
+### Daftar Produk
+
+Fitur Utama dari setiap Online-Store, menampilkan produk beserta gambar, harga dan link menuju detail deskripsi produk.
+
+Untuk membuat daftar produk, buat file `/jualan/konten/list_barang.php` berisi :
+
+	<div class="row">
+	<?php
+	  // Pilih semua produk dari tabel produk
+	  $sql_barang = "SELECT * FROM produk";
+	  $exe_sql    = mysql_query($sql_barang);
+	  while($barang=mysql_fetch_array($exe_sql))
+	  {
+	    // Tampilkan semua barang yang ditemukan satu per-satu
+	    // Dengan perulangan
+	    // Menampilkan barang dengan echo $barang[nama-kolom-tabel]
+	?>
+	  <div class="col-md-3">
+	    <div class="thumbnail">
+	      <a href="./?ur=konten/detail_barang&id_produk=<?php echo $barang[id_produk]; ?>">
+	        <img src="<?php echo $barang[gambar_produk]; ?>" title="<?php echo $barang[nama_produk]; ?>" class="img-responsive" />
+	      </a>
+	      <strong>Rp <?php echo $barang[harga_produk]; ?></strong>
+	      <br>
+	      <?php echo $barang[nama_produk]; ?>
+	      <br><br>
+	      <div class="text-center">
+	        <div class="btn-group">
+	          <a href="#" class="btn btn-danger">
+	            <span class="glyphicon glyphicon-shopping-cart"></span> &nbsp; Beli
+	          </a>
+	          <a href="./?ur=konten/detail_barang&id_produk=<?php echo $barang[id_produk]; ?>" title="Detail Produk" class="btn btn-default">
+	            <span class="glyphicon glyphicon-chevron-right"></span> &nbsp;
+	          </a>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	<?php
+	  } // Tutup while
+	?>
+	</div>
+
+<a name="detail-produk"></a>
+### Detail Produk
+
+Detail barang menampilkan informasi yang lebih lengkap dari suatu produk, ditampilkan dengan membuat file `/jualan/konten/detail_barang.php` :
+
+	<?php
+	  // $id_produk diambil dari url ?ur=link&id_produk=2 yang berasal dari Daftar produk
+	  $id_produk  = $_GET[id_produk];
+
+	  // Cari produk dengan id_tersebut, tampilkan semua detailnya
+	  $sql_detail = "SELECT * FROM produk WHERE id_produk='$id_produk'";
+	  $exe_detail = mysql_query($sql_detail);
+
+	  $detail     = mysql_fetch_array($exe_detail);
+	  // Menampilkan produk dengan $detail[nama-kolom-tabel]
+	?>
+	<!-- CSS untuk tampilan judul produk -->
+	<style>
+	  .detailproduk h2 {
+	    padding-top: 0;
+	    margin-top: 0;
+	  }
+	</style>
+	<div class="detailproduk">
+	  <div class="row">
+	      <h2 class="text-primary text-center"><?php echo $detail[nama_produk]; ?></h2>
+	  </div> <!-- .row -->
+	  <div class="row">
+	    <div class="col-md-6">
+	      <br>
+	      <div class="thumbnail">
+	        <img style="max-height:400px; padding:10px;" src="<?php echo $detail[gambar_produk]; ?>" alt="<?php echo $detail[nama_produk]; ?>">
+	        <div class="caption">
+	          <h3>Rp. <?php echo $detail[harga_produk]; ?> ,-</h3>
+	          <p>Note: Harga Berubah sewaktu - waktu.</p>
+	        </div>
+	      </div>
+	    </div>
+	    <div class="col-md-6">
+	      <p><h3>READY STOCK All Size </h3>
+	          Harga yang tertera merupakan harga per 1 item.
+	          <br /><br />
+	          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Impedit dolor, distinctio praesentium repudiandae fugit cum accusamus? Suscipit incidunt eius, non rem doloremque neque dignissimos quibusdam unde amet, est minima blanditiis.
+	          <br /><br />
+	          CANTUMKAN NOMOR ITEM YANG DIINGINKAN DI KETERANGAN SAAT PEMESANAN. TANPA KETERANGAN NOMOR ITEM AKAN DIKIRIM SECARA RANDOM
+	          <br /><br />
+	          <div class="well">
+	            Bingung transaksi via Tokopedia? Pengen transfer langsung aja? Silahkan PM, kami akan kasih kontak Whatsapp/LINE kami CP. 089631446027
+	          </div>
+
+	          <div align="center">
+	            <div class="btn-group">
+	              <button class="btn btn-default"> <span class="glyphicon glyphicon-star"></span> &nbsp; Tambah ke wishlist</button>
+	              <button class="btn btn-danger"> <span class="glyphicon glyphicon-shopping-cart"></span> &nbsp; Beli</button>
+	            </div>
+	          </div>
+	      </p>
+	    </div>
+	  </div> <!-- .row -->
+
+	  <div class="row">
+	    <div class="col-md-12">
+	      <table class="table table-bordered">
+	        <tr>
+	          <td><span class="glyphicon glyphicon-eye-open"></span> Dilihat sebanyak : <span class="pull-right">400x</span></td>
+	          <td><span class="glyphicon glyphicon-gift"></span> Berat : <span class="pull-right">10Kg</span></td>
+	        </tr>
+	        <tr>
+	          <td>Terjual : <span class="pull-right">2pcs</span></td>
+	          <td>Asuransi : <span class="pull-right">Adira</span></td>
+	        </tr>
+	        <tr>
+	          <td>Kondisi : <span class="pull-right">Baru</span></td>
+	          <td><span class="glyphicon glyphicon-shopping-cart"></span> Pemesanan Min. : <span class="pull-right">2</span></td>
+	        </tr>
+	      </table>
+	    </div>
+	  </div>
+	</div>
+
+<a name="pencarian-produk"></a>
+### Pencarian Produk
+
+Tampilan ini digunakan untuk menampilkan hasil pencarian dari **Form Cari** yang ada di Brand Menu. Perhatikan kode ini dalam file `/jualan/index.php` :
+
+	<!-- Form Pencarian Produk -->
+	<form action="./?ur=konten/hasil_cari" method="post">
+	<div class="input-group">
+	  <input name="barang_cari" type="text" class="form-control" placeholder="Cari produk disini" required>
+	  <span class="input-group-btn">
+	    <button class="btn btn-danger" type="submit"><span class="glyphicon glyphicon-search"></span>&nbsp; Cari</button>
+	  </span>
+	</div><!-- /input-group -->
+	</form>
+
+Form tersebut memiliki `action="./?ur=konten/hasil_cari"` yang artinya hasil post dari form ini akan diteruskan ke file `/jualan/konten/hasil_cari.php`, sehingga kita isi file tersebut dengan :
+
+	<?php
+	  // $_POST[barang_cari] artinya berasal dari Form dengan method="post"
+	  // dalam field <input> dengan name="barang_cari"
+	  $barang_cari = $_POST[barang_cari];
+	  echo "<p> Menampilkan hasil cari dari <strong>$barang_cari</strong></p> ";
+
+	  // Mencari dari tabel produk,
+	  // dimana kolom_produk mirip dengan karakter dari $barang_cari
+	  $sql_barang = "SELECT * FROM produk WHERE nama_produk LIKE '%$barang_cari%'";
+	  $exe_sql    = mysql_query($sql_barang);
+
+	  // Akan mengembalikan output berupa list
+	  // dari semua produk yang mirip
+	  while($barang=mysql_fetch_array($exe_sql))
+	  {
+	    // Tampilkan semua produk yang mirip pencarian
+	?>
+	  <div class="col-md-2">
+	    <strong><?php echo $barang[nama_produk]; ?></strong>
+	    <a href="./?ur=konten/detail_barang&id_produk=<?php echo $barang[id_produk]; ?>"><img src="<?php echo $barang[gambar_produk]; ?>" title="<?php echo $barang[nama_produk]; ?>" class="img-responsive thumbnail" /></a>
+	    <button type="button" class="btn btn-primary btn-block"><span class="glyphicon glyphicon-shopping-cart"></span> Rp <?php echo $barang[harga_produk]; ?></button>
+	  </div>
+	<?php
+	  } // Tutup while
+	  // Jika tidak ditemukan, maka tampilan akan kosong
+	?>
+
+<a name="manajemen-produk"></a>
+## Manajemen Produk
+
+Manajemen Produk digunakan untuk melihat, menambah, mengubah dan menghapus produk (CRUD). Fitur ini digunakan oleh admin untuk memudahkan manajemen produknya.
+
+<a name="tabel-daftar-produk"></a>
+### Tabel Daftar Produk
+
+Menampilkan Seluruh produk dalam bentuk tabel, dalam file `/jualan/manajemen_store/manajemen_produk.php` :
+
+	<h2>Manajemen Produk
+		<!-- Tombol menuju halaman tambah produk  -->
+		<a class="btn btn-primary pull-right" href="./?ur=manajemen_store/tambah_produk">
+		<span class="glyphicon glyphicon-plus-sign"></span> &nbsp; Tambah</a>
+	</h2>
+	<br>
+	<table class="table table-stripped">
+		<thead>
+			<th>ID Produk</th>
+			<th>Nama Produk</th>
+			<th>Harga</th>
+			<th>Kategori</th>
+			<th>URL Gambar</th>
+			<th>Opsi</th>
+			<tbody>
+			<?php
+				// SQL INNER JOIN digunakan untuk menggabungkan hasil dari 2 tabel
+				$sql = "SELECT produk.*, all_kategori.nama_kategori FROM produk INNER JOIN all_kategori ON produk.kategori_produk=all_kategori.id_kategori";
+				$exe = mysql_query($sql);
+				while($produk=mysql_fetch_array($exe))
+				{
+					// Keluarin isi tabel disini
+			?>
+				<tr>
+					<td><?php echo $produk[id_produk]; ?></td>
+					<td><?php echo $produk[nama_produk]; ?></td>
+					<td><?php echo $produk[harga_produk]; ?></td>
+					<td><?php echo $produk[nama_kategori]; ?></td>
+					<td><?php echo $produk[gambar_produk]; ?></td>
+					<td>
+						<!-- Link edit produk disertai variable idproduk -->
+						<a href="./?ur=manajemen_store/edit_produk&idproduk=<?php echo $produk[id_produk]; ?>">Edit</a>
+						 -
+						 <!-- Link hapus produk disertai variable idproduk
+						 dan konfirmasi js "return confirm()"
+						  -->
+						 <a onclick="return confirm('Hapus produk ini?')" href="./?ur=manajemen_store/hapus_produk&idproduk=<?php echo $produk[id_produk]; ?>">Hapus</a></td>
+				</tr>
+			<?php }; // Tutupnya While
+			?>
+			</tbody>
+		</thead>
+	</table>
+
+<a name="hapus-produk"></a>
+### Hapus Produk
+
+Berasal dari tag link dari file `/jualan/manajemen_store/manajemen_produk.php` yang kodenya :
+
+	<a onclick="return confirm('Hapus produk ini?')" href="./?ur=manajemen_store/hapus_produk&idproduk=<?php echo $produk[id_produk]; ?>">Hapus</a>
+
+Dari link tersebut, menuju konten dari file `/jualan/manajemen_store/hapus_produk.php` yang selanjutnya kita isi :
+
+	<?php
+		// $_GET[idproduk] berasal dari variable di URL 'idproduk'
+		$idproduk 	= $_GET[idproduk];
+
+		// SQL untuk hapus produk dengan id yang didapat
+		$sqldel 	= "DELETE FROM produk WHERE id_produk =" . $idproduk;
+		$exedel 	= mysql_query($sqldel) OR DIE(mysql_error());
+
+		// Redirect ke halaman lain setelah hapus berhasil
+		header('location: ./?ur=manajemen_store/manajemen_produk');
+	?>
+
+<a name="tambah-produk"></a>
+### Tambah Produk
+
+Berasal dari tag link dari file `/jualan/manajemen_store/manajemen_produk.php` yang kodenya :
+
+	<a class="btn btn-primary pull-right" href="./?ur=manajemen_store/tambah_produk">
+		<span class="glyphicon glyphicon-plus-sign"></span> &nbsp; Tambah
+	</a>
+
+Dari link tersebut, menuju konten dari file `/jualan/manajemen_store/tambah_produk.php` yang selanjutnya kita isi :
+
+	<?php
+		// Tambah Produk Action, akan dieksekusi setelah form dikirim
+		if(isset($_POST[namaproduk]))
+		{
+			$namaproduk 	= $_POST[namaproduk];
+			$hargaproduk 	= $_POST[hargaproduk];
+			$urlgambar 		= $_POST[urlgambar];
+			$kategoriproduk	= $_POST[kategoriproduk];
+
+			$sqladd 		= "INSERT INTO produk VALUES (
+									  NULL,
+									  '" .$namaproduk. "',
+									  '" .$hargaproduk. "',
+									  '" .$kategoriproduk. "',
+									  '" .$urlgambar. "'
+									  )
+							  ";
+			$exeadd 		= mysql_query($sqladd) OR DIE(mysql_error());
+			echo "<script> alert('Tambah produk sukses')</script>";
+
+			// Redirect ke halaman daftar produk setelah add selesai
+			header('location: ./?ur=manajemen_store/manajemen_produk');
+		}
+	?>
+
+	<form class="form-horizontal" action="./?ur=manajemen_store/tambah_produk" method="post">
+		<fieldset>
+
+		<!-- Form Name -->
+		<legend>Tambah Produk</legend>
+
+		<!-- Text input-->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="namaproduk">Nama Produk</label>
+		  <div class="col-md-4">
+		  <input id="namaproduk" name="namaproduk" type="text" placeholder="Isi Nama Produk" class="form-control input-md" required="">
+
+		  </div>
+		</div>
+
+		<!-- Text input-->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="hargaproduk">Harga Produk</label>
+		  <div class="col-md-4">
+		  <input id="hargaproduk" name="hargaproduk" type="text" placeholder="Isi harga produk" class="form-control input-md" required="">
+
+		  </div>
+		</div>
+
+		<!-- Text input-->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="urlgambar">URL Gambar</label>
+		  <div class="col-md-4">
+		  <input id="urlgambar" name="urlgambar" type="text" placeholder="Isi URL Gambar" class="form-control input-md" required="">
+
+		  </div>
+		</div>
+
+		<!-- Select Basic -->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="kategoriproduk">Kategori Produk</label>
+		  <div class="col-md-4">
+		    <select id="kategoriproduk" name="kategoriproduk" class="form-control">
+		      <?php
+		      	$kategori = "SELECT * FROM all_kategori";
+		      	$exe_kat  = mysql_query($kategori);
+		      	while($namakat=mysql_fetch_array($exe_kat))
+		      	{
+		      		// Nama - nama kategori
+		      ?>
+		      <option value="<?php echo $namakat[id_kategori]; ?>"><?php echo $namakat[nama_kategori]; ?></option>
+		      <?php
+		      	}; // Tutup while namakat
+		      ?>
+		    </select>
+		  </div>
+		</div>
+
+		<!-- Button (Double) -->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="submit"></label>
+		  <div class="col-md-8">
+		    <button id="submit" name="submit" class="btn btn-primary">Simpan</button>
+		    <button id="reset" name="reset" class="btn btn-default">Cancel</button>
+		  </div>
+		</div>
+
+		</fieldset>
+	</form>
+
+<a name="edit-produk"></a>
+### Edit Produk
+
+Tampilan edit tidak jauh berbeda dengan **tambah produk** hanya bedanya pada form sudah di preset dengan value masing-masing dari tabel. Dan saat di submit perintahnya bukan `INSERT` melainkan `INSERT`.
+
+Edit berasal dari tag link dari file `/jualan/manajemen_store/manajemen_produk.php` yang kodenya :
+
+	<a href="./?ur=manajemen_store/edit_produk&idproduk=<?php echo $produk[id_produk]; ?>">Edit</a>
+
+Dari link tersebut, menuju konten dari file `/jualan/manajemen_store/edit_produk.php` yang selanjutnya kita isi :
+
+	<?php
+		// Edit Produk Action, eksekusi setelah form di submit
+		if(isset($_POST[namaproduk]))
+		{
+			$idproduk 		= $_GET[idproduk];
+			$namaproduk 	= $_POST[namaproduk];
+			$hargaproduk 	= $_POST[hargaproduk];
+			$urlgambar 		= $_POST[urlgambar];
+			$kategoriproduk	= $_POST[kategoriproduk];
+
+			$sqlupdate 		= "UPDATE produk SET
+									  nama_produk 		= '" .$namaproduk. "',
+									  harga_produk		= '" .$hargaproduk. "',
+									  kategori_produk	= '" .$kategoriproduk. "',
+									  gambar_produk		= '" .$urlgambar. "'
+									  WHERE id_produk 	= " .$idproduk. "
+							  ";
+			$exeupdate 		= mysql_query($sqlupdate) OR DIE(mysql_error());
+			echo "<script> alert('Update sukses')</script>";
+			header('location: ./?ur=manajemen_store/manajemen_produk');
+		}
+
+		// Daftar Produk
+		$idproduk = $_GET[idproduk];
+		$sql = "SELECT produk.*, all_kategori.nama_kategori FROM produk INNER JOIN all_kategori ON produk.kategori_produk=all_kategori.id_kategori WHERE produk.id_produk=$idproduk";
+		$exe = mysql_query($sql);
+		while($produk=mysql_fetch_array($exe))
+		{
+			// Menampilkan value dari setiap kolom
+			// yang dipilih berdasarkan id
+			// dengan cara $produk[nama-kolom-tabel]
+	?>
+
+	<form class="form-horizontal" action="./?ur=manajemen_store/edit_produk&idproduk=<?php echo $idproduk; ?>" method="post">
+		<fieldset>
+
+		<!-- Form Name -->
+		<legend>Edit Produk</legend>
+
+		<!-- Text input-->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="namaproduk">Nama Produk</label>
+		  <div class="col-md-4">
+		  <input id="namaproduk" name="namaproduk" type="text" placeholder="Isi Nama Produk" class="form-control input-md" required="" value="<?php echo $produk[nama_produk]; ?>">
+
+		  </div>
+		</div>
+
+		<!-- Text input-->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="hargaproduk">Harga Produk</label>
+		  <div class="col-md-4">
+		  <input id="hargaproduk" name="hargaproduk" type="text" placeholder="Isi harga produk" class="form-control input-md" required="" value="<?php echo $produk[harga_produk]; ?>">
+
+		  </div>
+		</div>
+
+		<!-- Text input-->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="urlgambar">URL Gambar</label>
+		  <div class="col-md-4">
+		  <input id="urlgambar" name="urlgambar" type="text" placeholder="Isi URL Gambar" class="form-control input-md" required="" value="<?php echo $produk[gambar_produk]; ?>">
+
+		  </div>
+		</div>
+
+		<!-- Select Basic -->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="kategoriproduk">Kategori Produk</label>
+		  <div class="col-md-4">
+		    <select id="kategoriproduk" name="kategoriproduk" class="form-control">
+		      <option value="<?php echo $produk[kategori_produk]; ?>"><?php echo $produk[nama_kategori]; ?></option>
+		      <?php
+		      	$kategori = "SELECT * FROM all_kategori WHERE id_kategori != $produk[kategori_produk]";
+		      	$exe_kat  = mysql_query($kategori);
+		      	while($namakat=mysql_fetch_array($exe_kat))
+		      	{
+		      		// Nama - nama kategori
+		      ?>
+		      <option value="<?php echo $namakat[id_kategori]; ?>"><?php echo $namakat[nama_kategori]; ?></option>
+		      <?php
+		      	}; // Tutup while namakat
+		      ?>
+		    </select>
+		  </div>
+		</div>
+
+		<!-- Button (Double) -->
+		<div class="form-group">
+		  <label class="col-md-4 control-label" for="submit"></label>
+		  <div class="col-md-8">
+		    <button id="submit" name="submit" class="btn btn-primary">Simpan</button>
+		    <button id="reset" name="reset" class="btn btn-default">Cancel</button>
+		  </div>
+		</div>
+
+		</fieldset>
+	</form>
+
+	<?php
+		}; // Tutupnya while
+	?>
+
+<a name="penutup"></a>
+## Penutup
+
+![Screenshot](http://localhost/hiweb/readme-asset/jualanbatik-2.jpg)
+
+Website Online-store sederhana sudah jadi. Website ini sengaja tidak ditambahkan fitur tambahan seperti keranjang belanja, login customer, perhitungan total belanja, dsb dikarenakan tujuan modul ini adalah **BASIC** CRUD dan Dynamic Page dengan studi kasus Online-Store. Semoga yang sedikit ini bisa membantu memahami dasar-dasar website dinamis dan lompatan menuju level selanjutnya.
+
+<a name="github"></a>
+### Lihat di Github
+
+Kode lengkap website ini bisa dilihat di [github](http://github.com/axquired24). Disana juga ada beberapa repository yang sengaja saya share untuk berbagi ilmu sesama pengembang website khususnya PHP.
+
+<a name="penulis"></a>
+### Penulis
+
+![Albert Septiawan](http://localhost/hiweb/readme-asset/axl.jpg)
+
+Nama Lengkap Albert Septiawan. lahir di Lampung, 24 September 1995. Saat ini (Agustus, 2016) saya masih mahasiswa di Universitas Muhammadiyah Surakarta semester 7 yang juga sebagai Freelance bidang Web Developer yang lebih fokus pada framework PHP laravel dan Branding Digital Designer.  
+
+Kontak : albertseptiawan24@gmail.com  
+Github : github.com/axquired24  
+FB 	   : fb.com/axquiredsaint24  
